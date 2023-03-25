@@ -1,20 +1,20 @@
-#include "classes.h"
+#include "class.h"
 #include <iostream>
 #include <string>
-
+#include <cstdlib> // for rand() and srand()
+#include <algorithm>
 using namespace std;
 // constructeur de graphe
 graphe::graphe(int n)
 {
     dim=n;
     tab =new double*[n];
-    for (int i=0;i<dim,i++)
+    for (int i=0;i<dim;i++)
     {
         tab[i]=new double [dim];
     }
-    return this;
 }
-// distructeur de graphe
+// destructeur de graphe
 graphe::~graphe()
 {
     if (tab!=0) delete [] tab;
@@ -24,45 +24,66 @@ graphe::~graphe()
 // constructeur d'individu
 individu::individu(int n)
 {
-    this.dim=n;
+    this->dim=n;
     this->indiv= new double [dim];
-    this->poids= new double [dim];
-    return this
 }
-// distructeur d'individu
-individu::~individu()
+individu::individu(const individu& v)
 {
-    if indiv!=0 delete [] indiv;
-    if poids!=0 delete [] poids;
-    dim=0;
-
-}
-chemin::chemin(chemin v)
-{
-    chemin(v.dim);
+    dim=v.dim;
+    indiv= new double [dim];
     for (int i=0; i<dim;i++)
     {
         indiv[i]=v.indiv[i];
-        poids[i]=v.poids[i];
     }
-    return this
 }
-double individu::adapt ()
+// destructeur d'individu
+chemin::~chemin()
+{
+    if (indiv!=0) delete [] indiv;
+    if (poids!=0) delete [] poids;
+    dim=0;
+}
+
+double chemin::adapt ()
 {
     double s=0;
     for (int i =0;i<dim; i++)
         s+=poids[i];
     return s;
 }
+individu::individu()
+{
+    dim=taille;
+    indiv=new double [dim];
+}
+// class population et ses fonctionalités
+population::population(int n)
+{
+    nbre=n;
+    pop=new chemin[nbre];
+}
+population::population(const population& other)
+{
+    nbre=other.nbre;
+    pop=new chemin[other.nbre];
+    for(int i=0;i<nbre;i++) pop[i]=other.pop[i];
+
+}
+population::~population()
+{
+    if (pop!=0) delete[] pop;
+    nbre=0;
+}
+
 chemin mutation (chemin ch )
 {
-    int l= (int)((float)rand() * (chemin.dim+1) / (RAND_MAX-1)) ;
-    int k= (int)((float)rand() * (chemin.dim+1) / (RAND_MAX-1)) ;
-    if l<k
+    int l = rand() % (ch.dim);
+    int k = rand() % (ch.dim);
+    if (l<k)
     {
         int c=k;
         k=l;
-        l=k;
+        l=c;
     }
     double c1=ch.indiv[l];
     double c2=ch.indiv[k];
@@ -72,20 +93,39 @@ chemin mutation (chemin ch )
     c2=ch.indiv[l-1];
     ch.indiv[k+1]=c2;
     ch.indiv[l-1]=c1;
-    return chemin ;
-
+    return ch ;
 }
-chemin* selection_prod(population population, string select)
-{
-    population pop_prod= population(pop.chemin.dim)
-    if strcmp(select, "roulette")==0;
-    {
-        double s=0 ;
-        for (i=0;i<pop.nbre; i++)
-        {
-            chemin ch=pop.chemin[i];
-            s+=ch.adapt;
-        }
 
+chemin selec_roulette(population pop)
+{
+    double s=0;
+    for (int i=0;i<pop.nbre;i++) s+=pop[i].adapt();
+    double r = (double)rand() / RAND_MAX * s;
+    int i=0; double sum=pop[0].adapt();
+    while( (i<pop.nbre)&& (sum<=r) )
+    {
+        i+=1;
+        sum+=pop[i].adapt();
     }
+    return pop [i];
+}
+
+ chemin selec_rang(population popu)
+{
+      bool comparator(const chemin&a, const chemin&b)
+      {
+          return a.adapt()> b.adapt();
+      }
+      population pop_copie(popu);
+      std::sort(pop_copie.pop, pop_copie.pop+ popu.nbre, comparator);
+      double s=0;
+      for (int i=0;i<pop_copie.nbre;i++) s+=i+1;
+      double r = (double)rand() / RAND_MAX * s;
+      int i=0; double sum=1;
+      while( (i<pop_copie.nbre)&& (sum<=r) )
+        {
+        i+=1;
+        sum+=i+1;
+      }
+    return pop_copie [i];
 }
