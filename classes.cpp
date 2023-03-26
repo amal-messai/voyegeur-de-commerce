@@ -51,11 +51,7 @@ double chemin::adapt ()
         s+=poids[i];
     return s;
 }
-individu::individu()
-{
-    dim=taille;
-    indiv=new double [dim];
-}
+
 // class population et ses fonctionalités
 population::population(int n)
 {
