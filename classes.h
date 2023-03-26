@@ -5,7 +5,6 @@
 #include <string>
 
 using namespace std;
-const int taille = 42;
 class point
 {
     float x ;
@@ -39,7 +38,7 @@ public:
     double* indiv;
     individu(int n);
     individu  (const individu& v);
-    individu();// default constructor
+    individu()=default;// default constructor
     virtual~individu(){};
     virtual double adapt()=0;
 
@@ -48,7 +47,7 @@ class chemin : public individu
 {
 public:
     double* poids;
-    chemin(): individu(),poids(new double[taille]) {};
+    chemin(): individu() {};
     chemin(int n) : individu(n), poids(new double[n]) {} ;
     chemin (const chemin& other) : individu(other), poids(new double[other.dim]) {
         for (int i = 0; i < dim; i++) {
