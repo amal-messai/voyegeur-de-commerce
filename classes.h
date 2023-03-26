@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <vector>
 using namespace std;
 class point
 {
@@ -61,7 +61,7 @@ class population
 {
 public:
     int nbre;
-    chemin* pop;
+    vector<chemin> pop;
     population (int n );
     population(const population& other);
     ~population();
