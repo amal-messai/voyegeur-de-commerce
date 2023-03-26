@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdlib> // for rand() and srand()
 #include <algorithm>
+#include <vector>
 using namespace std;
 // constructeur de graphe
 graphe::graphe(int n)
@@ -56,18 +57,22 @@ double chemin::adapt ()
 population::population(int n)
 {
     nbre=n;
-    pop=new chemin[nbre];
+    pop.resize(n);
 }
 population::population(const population& other)
 {
     nbre=other.nbre;
-    pop=new chemin[other.nbre];
-    for(int i=0;i<nbre;i++) pop[i]=other.pop[i];
-
+    pop.resize(other.pop.size());
+    int i = 0;
+    for (const auto& ch : other.pop) {
+        pop[i] = ch;
+        ++i;
+    }
 }
+
 population::~population()
 {
-    if (pop!=0) delete[] pop;
+    pop.clear();
     nbre=0;
 }
 
