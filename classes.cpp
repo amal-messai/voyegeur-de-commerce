@@ -45,12 +45,25 @@ chemin::~chemin()
     dim=0;
 }
 
-double chemin::adapt ()
+double chemin::adapt () const
 {
     double s=0;
     for (int i =0;i<dim; i++)
         s+=poids[i];
     return s;
+}
+
+void chemin::affiche()
+{
+    cout<<"affichage du poids";
+    for (int i=0;i<dim-1;i++)
+        cout<< poids[i]<<",";
+    cout<<poids[dim-1];
+    cout<<"\n"<<"affichage de l'individu"<<"\n";
+    for (int i=0;i<dim-1;i++)
+        cout<< indiv[i]<<",";
+    cout<<indiv[dim-1];
+
 }
 
 // class population et ses fonctionalités
@@ -103,7 +116,7 @@ chemin selec_roulette(population pop)
     for (int i=0;i<pop.nbre;i++) s+=pop[i].adapt();
     double r = (double)rand() / RAND_MAX * s;
     int i=0; double sum=pop[0].adapt();
-    while( (i<pop.nbre)&& (sum<=r) )
+    while( (i<pop.nbre)&& (sum<r) )
     {
         i+=1;
         sum+=pop[i].adapt();
@@ -111,14 +124,10 @@ chemin selec_roulette(population pop)
     return pop [i];
 }
 
- chemin selec_rang(population popu)
+ chemin selec_rang(const population& popu)
 {
-      bool comparator(const chemin&a, const chemin&b)
-      {
-          return a.adapt()> b.adapt();
-      }
       population pop_copie(popu);
-      std::sort(pop_copie.pop, pop_copie.pop+ popu.nbre, comparator);
+      std::sort(pop_copie.pop.begin(), pop_copie.pop.end(),[]( const chemin&a, chemin&b){ return a.adapt()>b.adapt();});
       double s=0;
       for (int i=0;i<pop_copie.nbre;i++) s+=i+1;
       double r = (double)rand() / RAND_MAX * s;
@@ -128,5 +137,5 @@ chemin selec_roulette(population pop)
         i+=1;
         sum+=i+1;
       }
-    return pop_copie [i];
+    return pop_copie.pop.at(i);
 }
