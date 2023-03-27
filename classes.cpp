@@ -143,7 +143,7 @@ chemin selec_roulette(population pop, graphe G )
 
       population pop_copie(popu);
        sort(pop_copie.pop.begin(), pop_copie.pop.end(), [&](const chemin& A, const chemin& B) {
-        return compare_by_adapt_desc(A, B, G);
+        return compare_by_adapt_asc(A, B, G);
     });
       int s=0;
       for (int i=0;i<pop_copie.nbre;i++) s+=i+1;
