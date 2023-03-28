@@ -162,7 +162,7 @@ population selec_tournoi(const population &pop,graphe G)
     for (int i=0;i<pop.nbre;i++)
     {
         int r = rand() % (pop.nbre);
-        if (compare_by_adapt_desc(pop.pop.at(i),pop.pop.at(r),G))
+        if (compare_by_adapt_asc(pop.pop.at(i),pop.pop.at(r),G))
             pop_tournoi[i]=pop.pop.at(i);
         else
             pop_tournoi[i]=pop.pop.at(r);;
