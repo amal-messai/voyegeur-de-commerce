@@ -1,91 +1,83 @@
-#include "classes.h"
+#ifndef CLASS_H_INCLUDED
+#define CLASS_H_INCLUDED
 #include <iostream>
 #include <string>
-
+#include <vector>
+#include <functional>
 using namespace std;
-// constructeur de graphe
-graphe::graphe(int n)
+class point
 {
-    dim=n;
-    tab =new double*[n];
-    for (int i=0;i<dim,i++)
-    {
-        tab[i]=new double [dim];
-    }
-    return this;
-}
-// distructeur de graphe
-graphe::~graphe()
+    float x ;
+    float y ;
+    point(float a, float b): x(a), y(b) {};
+    point(const point& A):x(A.x), y(A.y){};
+};
+class graphe
 {
-    if (tab!=0) delete [] tab;
-    dim=0;
-}
+public :
+    int dim;
+    int** tab;
+    graphe( int n );
+    ~graphe();
+    int val (int i , int j) {return tab[i][j];};
+    void affiche();
+};
 
-// constructeur d'individu
-individu::individu(int n)
+class ville
 {
-    this.dim=n;
-    this->indiv= new double [dim];
-    this->poids= new double [dim];
-    return this
-}
-// distructeur d'individu
-individu::~individu()
-{
-    if indiv!=0 delete [] indiv;
-    if poids!=0 delete [] poids;
-    dim=0;
+public:
+    string nom;
+    point coord;
+    //ville (string a ,const point&  p ) : nom(a), coord (p){};
 
-}
-chemin::chemin(chemin v)
-{
-    chemin(v.dim);
-    for (int i=0; i<dim;i++)
-    {
-        indiv[i]=v.indiv[i];
-        poids[i]=v.poids[i];
-    }
-    return this
-}
-double individu::adapt ()
-{
-    double s=0;
-    for (int i =0;i<dim; i++)
-        s+=poids[i];
-    return s;
-}
-chemin mutation (chemin ch )
-{
-    int l= (int)((float)rand() * (chemin.dim+1) / (RAND_MAX-1)) ;
-    int k= (int)((float)rand() * (chemin.dim+1) / (RAND_MAX-1)) ;
-    if l<k
-    {
-        int c=k;
-        k=l;
-        l=k;
-    }
-    double c1=ch.indiv[l];
-    double c2=ch.indiv[k];
-    ch.indiv[l]=c2;
-    ch.indiv[k]=c1;
-    c1=ch.indiv[k+1];
-    c2=ch.indiv[l-1];
-    ch.indiv[k+1]=c2;
-    ch.indiv[l-1]=c1;
-    return chemin ;
+};
 
-}
-chemin* selection_prod(population population, string select)
-{
-    population pop_prod= population(pop.chemin.dim)
-    if strcmp(select, "roulette")==0;
-    {
-        double s=0 ;
-        for (i=0;i<pop.nbre; i++)
-        {
-            chemin ch=pop.chemin[i];
-            s+=ch.adapt;
-        }
 
-    }
-}
+class individu
+{
+public:
+    int dim;
+    int* indiv;
+    individu(int n);
+    individu  (const individu& v);
+    individu()=default ;// default constructor
+    virtual~individu(){};
+    virtual int adapt(graphe G) const =0;
+
+};
+class chemin : public individu
+{
+public:
+    chemin(): individu(){};
+    chemin(int n) : individu(n) {} ;
+    chemin (const chemin& other) : individu(other) {};
+    int adapt (graphe G) const;
+    ~chemin();
+    void affiche();
+};
+class population
+{
+public:
+    int nbre;
+    vector <chemin> pop;
+    population (int n );
+    population(const population& other);
+    ~population();
+    chemin& operator[] (int i ) {return pop.at(i);};
+
+};
+chemin mutation (chemin ch)  ;
+// méthodes de séléction des reproducteurs
+chemin selec_roulette(population pop, graphe G);
+chemin selec_rang(const population& pop, graphe G );
+population selec_tournoi(const population &pop,graphe G);
+
+
+// méthode de sélection de next generation
+bool compare_by_adapt_asc(const chemin& A,const chemin& B, graphe G);
+bool compare_by_adapt_desc(const chemin& A,const chemin& B, graphe G);
+population selec_reproducteurs(population pop_initi,graphe G, std::function<chemin(const population&, graphe)> selection_method);
+population selection_nextgen(population pop_prod, int q, graphe G);
+
+
+#endif CLASS_H_INCLUDED
