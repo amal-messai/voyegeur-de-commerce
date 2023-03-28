@@ -57,7 +57,7 @@ chemin::~chemin()
 
 int chemin::adapt (graphe G) const
 {
-    int s=0;
+    int s=G.val(G.dim-1,0);
     for (int i =0;i<dim-1; i++)
         s+=G.val(indiv[i],indiv[i+1]);
     return s;
