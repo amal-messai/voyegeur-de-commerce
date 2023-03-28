@@ -156,21 +156,35 @@ chemin selec_roulette(population pop, graphe G )
       }
     return pop_copie.pop.at(i);
 }
-population selec_tournoi(const population &pop,graphe G)
+population selec_tournoi(const population &gen,graphe G, double p)
 {
-    population pop_tournoi(pop.nbre);
-    for (int i=0;i<pop.nbre;i++)
+    int n=gen.nbre;
+    population pop_tournoi=population(n);
+    for(int i=0; i<n, i++)
     {
-        int r = rand() % (pop.nbre);
-        if (compare_by_adapt_asc(pop.pop.at(i),pop.pop.at(r),G))
-            pop_tournoi[i]=pop.pop.at(i);
+        int j=rand()%n;
+        int k=rand()%n;
+        chemin p1(gen.pop[j]);
+        chemin p2(gen.pop[k]);
+        double proba1,proba2;
+        if p1.adapt(G)<p2.adapt(G) 
+        {
+            proba1=p;
+            proba2=1-p;
+        }
         else
-            pop_tournoi[i]=pop.pop.at(r);;
-
+        {
+            proba2=p;
+            proba1=1-p;
+        }
+        double proba=rand() / (double)RAND_MAX;
+        if (proba<proba1) pop_tournoi[i]=p1;
+        else pop_tournoi[i]=p2;
+        
     }
     return pop_tournoi;
 }
-
+        
 population selec_reproducteurs(population pop_initi,graphe G,std::function<chemin(const population&, graphe)> selection_method)
 {
     population pop_prod (pop_initi.nbre);
