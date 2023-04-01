@@ -34,3 +34,9 @@ int main()
     chemin res=selec_roulette(popu); res.affiche();
     return 0;
 }
+
+
+helloo
+marhbaaaaa
+nestanna fiik
+tasma3 fiyaaa ??? hello ??
