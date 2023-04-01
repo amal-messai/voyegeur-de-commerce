@@ -78,7 +78,7 @@ bool compare_by_adapt_asc(const chemin& A,const chemin& B, graphe G);
 bool compare_by_adapt_desc(const chemin& A,const chemin& B, graphe G);
 population selec_reproducteurs(population pop_initi,graphe G, std::function<chemin(const population&, graphe)> selection_method);
 population selection_nextgen(population pop_prod, int q, graphe G);
-
+population gen_init(graphe G,int taille  );
 
 #endif CLASS_H_INCLUDED
 
