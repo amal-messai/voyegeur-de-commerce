@@ -4,7 +4,6 @@
 #include <cstdlib> // for rand() and srand()
 #include <vector>
 #include <algorithm>
-#include <functional>
 using namespace std;
 // Class graphe
 graphe::graphe(int n)
@@ -143,7 +142,7 @@ chemin selec_roulette(population pop, graphe G )
 
       population pop_copie(popu);
        sort(pop_copie.pop.begin(), pop_copie.pop.end(), [&](const chemin& A, const chemin& B) {
-        return compare_by_adapt_asc(A, B, G);
+        return compare_by_adapt_desc(A, B, G);
     });
       int s=0;
       for (int i=0;i<pop_copie.nbre;i++) s+=i+1;
@@ -171,15 +170,21 @@ population selec_tournoi(const population &pop,graphe G)
     return pop_tournoi;
 }
 
-population selec_reproducteurs(population pop_initi,graphe G,std::function<chemin(const population&, graphe)> selection_method)
+population selec_reproducteurs(population pop_initi,graphe G,std::string selection_method)
 {
+    if (selection_method.compare("selec_tournoi") == 0) {return selec_tournoi(pop_initi,G);}
     population pop_prod (pop_initi.nbre);
-    for (int i=0;i<pop_initi.nbre;i++)
-    {
-        chemin indiv_selected=selection_method(pop_initi,G);
-        pop_prod[i]=indiv_selected;
+    for (int i = 0; i < pop_initi.nbre; i++) {
+        chemin indiv_selected;
+        if (selection_method.compare("selec_rang") == 0) {
+            indiv_selected = selec_rang(pop_initi, G);
+        }
+        else if (selection_method.compare("roulette") == 0) {
+            indiv_selected = selec_roulette(pop_initi, G);
+        }
+        pop_prod[i] = indiv_selected;
     }
-        return(pop_prod);
+    return pop_prod;
 }
 
 population selection_nextgen(population pop_prod, int q, graphe G)
@@ -228,5 +233,22 @@ population selection_nextgen(population pop_prod, int q, graphe G)
         next_gen.pop[i]=pop_prod.pop[i];
     return next_gen;
 }
-
-
+population gen_init(graphe G,int taille)
+{
+    int nbre_ville=G.dim;
+    population P(taille);
+    for (int i=0;i<taille;i++)
+    {
+        chemin chemin_result(nbre_ville);
+        chemin_result.indiv[0]=rand() % (nbre_ville);
+        for (int j=1;j<nbre_ville;j++)
+        {
+            int r = rand() % (nbre_ville);
+            while( G.val(j-1,r)==-1 )
+                    int r = rand() % (nbre_ville);
+            chemin_result.indiv[j]=r;
+        }
+        P.pop[i]=chemin_result;
+    }
+    return P;
+}
