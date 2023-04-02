@@ -19,7 +19,7 @@ public :
     int** tab;
     graphe( int n );
     ~graphe();
-    int val (int i , int j) {return tab[i][j];};
+    int val (int i , int j) const {return tab[i][j];};
     void affiche();
 };
 
@@ -42,7 +42,8 @@ public:
     individu  (const individu& v);
     individu()=default ;// default constructor
     virtual~individu(){};
-    virtual int adapt(graphe G) const =0;
+    virtual int adapt(const graphe& G) const =0;
+    virtual bool in(int k)=0;
 
 };
 class chemin : public individu
@@ -51,10 +52,13 @@ public:
     chemin(): individu(){};
     chemin(int n) : individu(n) {} ;
     chemin (const chemin& other) : individu(other) {};
-    int adapt (graphe G) const;
+    int adapt (const graphe& G) const ;
     ~chemin();
+    chemin& operator =(const chemin&other);
+    bool in(int k);
     void affiche();
 };
+
 class population
 {
 public:
@@ -64,21 +68,24 @@ public:
     population(const population& other);
     ~population();
     chemin& operator[] (int i ) {return pop.at(i);};
+    operator =(const population& other);
+    void affiche();
 
 };
-chemin mutation (chemin ch)  ;
+chemin mutation (chemin ch, graphe G)  ;
 // méthodes de séléction des reproducteurs
 chemin selec_roulette(population pop, graphe G);
 chemin selec_rang(const population& pop, graphe G );
-population selec_tournoi(const population &pop,graphe G);
+population selec_tournoi(const population &gen,graphe G);
 
 
 // méthode de sélection de next generation
 bool compare_by_adapt_asc(const chemin& A,const chemin& B, graphe G);
 bool compare_by_adapt_desc(const chemin& A,const chemin& B, graphe G);
-population selec_reproducteurs(population pop_initi,graphe G, std::function<chemin(const population&, graphe)> selection_method);
+population selec_reproducteurs(population pop_initi,graphe G, std::string selection_method);
 population selection_nextgen(population pop_prod, int q, graphe G);
-population gen_init(graphe G,int taille  );
+population gen_init(graphe G,int taille, int k);
 
 #endif CLASS_H_INCLUDED
+
 
