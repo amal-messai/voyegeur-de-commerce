@@ -8,7 +8,6 @@ using namespace std;
 
 int main()
 {
-    srand(time(NULL));
     graphe G (4);
     G.tab[0][0]=-1;
     G.tab[0][1]=10;
@@ -32,10 +31,9 @@ int main()
 G.affiche();
 population pop_init=gen_init(G,5,0);
 pop_init.affiche();
-cout<<pop_init.pop[0].adapt(G);
-//chemin ch= selec_roulette(pop_init,G);
-//cout<<"\n"; cout<<"la selection par roulette donne "<<"\n";
-//ch.affiche();
+chemin ch= selec_roulette(pop_init,G);
+cout<<"\n"; cout<<"la selection par roulette donne "<<"\n";
+ch.affiche();
 
 //population prod=selec_reproducteurs(pop_init,G,"selec_roulette");
 //population pop_next=selection_nextgen(prod,5,G);
