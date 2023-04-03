@@ -32,10 +32,7 @@ int main()
 G.affiche();
 population pop_init=gen_init(G,5,0);
 pop_init.affiche();
-
-int s=pop_init.pop[0].adapt(G);
-cout<<"adapt"<<s;
-
+cout<<pop_init.pop[0].adapt(G);
 //chemin ch= selec_roulette(pop_init,G);
 //cout<<"\n"; cout<<"la selection par roulette donne "<<"\n";
 //ch.affiche();
@@ -64,3 +61,4 @@ cout<<"adapt"<<s;
 
     return 0;
 }
+
