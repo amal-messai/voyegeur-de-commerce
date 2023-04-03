@@ -8,20 +8,31 @@
 
 using namespace std;
 // Class graphe
+int graphe::val(int i, int j) const {
+    if (i >= 0 && i < dim && j >= 0 && j < dim) {
+        return tab[i][j];
+    } else {
+
+        return -1;
+    }
+}
+
 graphe::graphe(int n)
 {
     dim=n;
     tab =new int*[n];
-    for (int i=0;i<dim;i++)
+    for (int i=0;i<n;i++)
     {
-        tab[i]=new int [dim];
+        tab[i]=new int [n];
     }
 }
 
 graphe::~graphe()
 {
-    if (tab!=0) delete [] tab;
-    dim=0;
+     for (int i = 0; i < dim; i++) {
+        delete[] tab[i];
+    }
+    delete[] tab;
 }
 void graphe::affiche()
 {
@@ -37,9 +48,11 @@ void graphe::affiche()
 //Class individu
 individu::individu(int n)
 {
-    this->dim=n;
-    this->indiv= new int [dim];
-}
+    dim=n;
+    indiv= new int [dim];
+    for (int j = 0; j < dim; j++) {
+        indiv[j] = 0;
+}}
 individu::individu(const individu& v)
 {
     dim=v.dim;
@@ -49,23 +62,24 @@ individu::individu(const individu& v)
         indiv[i]=v.indiv[i];
     }
 }
-// destructeur d'individu
+
+ //destructeur d'individu
 chemin::~chemin()
 {
     if (indiv!=0) delete [] indiv;
     dim=0;
 }
 
-
-int chemin::adapt ( const graphe& G) const
+int chemin::adapt (  graphe G) const
 {
-    int s=G.val( indiv[G.dim-1],indiv[0] );
+    int s=G.val( indiv[dim-1],indiv[0] );
     for (int i =0;i<dim-1; i++)
     {
         s+=G.val( indiv[i],indiv[i+1] );
     }
     return s;
 }
+
 bool chemin::in(int k)
 {
 
@@ -89,18 +103,19 @@ void chemin::affiche()
 }
 chemin& chemin::operator =(const chemin&other)
 {
-    if (dim!=other.dim)  { if (dim!=0) {delete [] indiv;dim=0;}
-    dim=other.dim; indiv = new int[dim];}
-    for (int i=0;i<dim;i++) indiv[i]=other.indiv[i];
+    if (this != &other) {
+        dim = other.dim;
+        delete[] indiv;
+        indiv = new int[dim];
+    for (int i=0;i<dim;i++) indiv[i]=other.indiv[i];}
     return *this;
 }
-
 
 // class population et ses fonctionalités
 population::population(int n)
 {
     nbre=n;
-    pop.resize(n);
+    pop .resize(n);
 }
 population::population(const population& other)
 {
@@ -127,28 +142,26 @@ population::~population()
     pop.clear();
     nbre=0;
 }
-population::operator =(const population &other)
+population& population::operator=(const population& other)
 {
-    nbre=other.nbre;
-    pop.resize(other.pop.size());
-    int i = 0;
-    for (const auto& ch : other.pop) {
-        pop[i] = ch;
-        ++i;
+    if (this != &other) {
+        nbre = other.nbre;
+        pop = other.pop;
     }
-
+    return *this;
 }
+
 chemin mutation (chemin ch , graphe G)
 {
-    int l = rand() % (ch.dim);
-    int k = rand() % (ch.dim);
+    int l = rand() % (ch.dim-1);
+    int k = rand() % (ch.dim-1);
     if (l<k)
     {
         int c=k;
         k=l;
         l=c;
     }
-    while ((G.val(ch.indiv[k-1], ch.indiv[l])==-1) || (G.val(ch.indiv[l-1], ch.indiv[k+2])==-1)|| (G.val(ch.indiv[k+1], ch.indiv[l-2])==-1) || (G.val(ch.indiv[k], ch.indiv[l+1])==-1))
+    while (( G.val(ch.indiv[k-1], ch.indiv[l] )==-1) || (G.val(ch.indiv[l-1], ch.indiv[k+2])==-1)|| (G.val(ch.indiv[k+1], ch.indiv[l-2])==-1) || (G.val(ch.indiv[k], ch.indiv[l+1])==-1))
     {
         int l = rand() % (ch.dim);
         int k = rand() % (ch.dim);
@@ -308,8 +321,6 @@ population gen_init(graphe G,int taille, int k)
 {
     int nbre_ville=G.dim;
     population gen (taille);
-    srand(time(NULL));
-
     for (int i=0;i<taille;i++)
     {
         chemin chemin_result (nbre_ville);
@@ -321,10 +332,9 @@ population gen_init(graphe G,int taille, int k)
             {
                 r = rand() % (nbre_ville);
             }
-
-            chemin_result.indiv[j]=r;
+              chemin_result.indiv[j]=r;
         }
-        gen.pop[i]=chemin_result;
+        gen.pop[i]= chemin_result;
     }
 
     return gen;
