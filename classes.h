@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <memory>
+
 using namespace std;
 class point
 {
@@ -12,6 +14,7 @@ class point
     point(float a, float b): x(a), y(b) {};
     point(const point& A):x(A.x), y(A.y){};
 };
+
 class graphe
 {
 public :
@@ -19,7 +22,7 @@ public :
     int** tab;
     graphe( int n );
     ~graphe();
-    int val (int i , int j) const {return tab[i][j];};
+    int val (int i , int j) const ;
     void affiche();
 };
 
@@ -31,8 +34,6 @@ public:
     //ville (string a ,const point&  p ) : nom(a), coord (p){};
 
 };
-
-
 class individu
 {
 public:
@@ -41,8 +42,8 @@ public:
     individu(int n);
     individu  (const individu& v);
     individu()=default ;// default constructor
-    virtual~individu(){};
-    virtual int adapt(const graphe& G) const =0;
+    virtual~individu() =default;
+    virtual int adapt( graphe G) const =0;
     virtual bool in(int k)=0;
 
 };
@@ -51,12 +52,13 @@ class chemin : public individu
 public:
     chemin(): individu(){};
     chemin(int n) : individu(n) {} ;
-    chemin (const chemin& other) : individu(other) {};
-    int adapt (const graphe& G) const ;
+    chemin (const chemin& other) : individu(other){};
+    int adapt (graphe G) const ;
     ~chemin();
     chemin& operator =(const chemin&other);
     bool in(int k);
     void affiche();
+
 };
 
 class population
@@ -68,7 +70,7 @@ public:
     population(const population& other);
     ~population();
     chemin& operator[] (int i ) {return pop.at(i);};
-    operator =(const population& other);
+    population& operator =(const population& other);
     void affiche();
 
 };
@@ -87,5 +89,4 @@ population selection_nextgen(population pop_prod, int q, graphe G);
 population gen_init(graphe G,int taille, int k);
 
 #endif CLASS_H_INCLUDED
-
 
