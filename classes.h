@@ -65,6 +65,8 @@ class population
 {
 public:
     int nbre;
+    void sort_by_adapt_asc(const graphe& G);
+    void sort_by_adapt_desc(const graphe& G);
     vector <chemin> pop;
     population (int n );
     population(const population& other);
@@ -76,18 +78,17 @@ public:
 };
 chemin mutation (chemin ch, const graphe& G)  ;
 // méthodes de séléction des reproducteurs
-chemin selec_roulette(population pop, const graphe& G);
-chemin selec_rang(const population& pop, const graphe& G );
+chemin selec_roulette(const population& P, const graphe& G);
+chemin selec_rang(const population& P, const graphe& G );
 population selec_tournoi(const population &gen,const graphe& G);
 
 
 // méthode de sélection de next generation
 bool compare_by_adapt_asc(const chemin& A,const chemin& B, const graphe& G);
 bool compare_by_adapt_desc(const chemin& A,const chemin& B, const graphe& G);
-population selec_reproducteurs(population pop_initi,const graphe& G, std::string selection_method);
+population selec_reproducteurs( const population& pop_initi,const graphe& G, const char* selection_method);
 population selection_nextgen(population pop_prod, int q, const graphe& G);
 population gen_init(const graphe& G,int taille, int k);
 
 #endif CLASS_H_INCLUDED
-
 
