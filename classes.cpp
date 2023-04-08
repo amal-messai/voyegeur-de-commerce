@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <ctime>   // for time()
-
+#include <cstring>
 using namespace std;
 // Class graphe
 int graphe::val(int i, int j) const {
@@ -16,7 +16,30 @@ int graphe::val(int i, int j) const {
         return -1;
     }
 }
+void population::sort_by_adapt_asc(const graphe& G) {
+    for (int i = 0; i < nbre - 1; i++) {
+        for (int j = 0; j < nbre - i - 1; j++) {
+            if (pop[j].adapt(G) > pop[j + 1].adapt(G)) {
+                chemin tmp = pop[j];
+                pop[j] = pop[j + 1];
+                pop[j + 1] = tmp;
+            }
+        }
+    }
 
+}
+void population::sort_by_adapt_desc(const graphe& G) {
+    for (int i = 0; i < nbre - 1; i++) {
+        for (int j = 0; j < nbre - i - 1; j++) {
+            if (pop[j].adapt(G) < pop[j + 1].adapt(G)) {
+                chemin tmp = pop[j];
+                pop[j] = pop[j + 1];
+                pop[j + 1] = tmp;
+            }
+        }
+    }
+
+}
 graphe::graphe(int n)
 {
     dim=n;
@@ -121,16 +144,17 @@ population::population(int n)
     nbre=n;
     pop .resize(n);
 }
+
 population::population(const population& other)
 {
     nbre=other.nbre;
-    pop.resize(other.pop.size());
-    int i = 0;
-    for (const auto& ch : other.pop) {
-        pop[i] = ch;
-        ++i;
+    pop.reserve(other.pop.size()); // allocate memory for the new population
+        for (const auto& ch : other.pop) {
+            pop.emplace_back(ch); // use chemin's copy constructor to make a copy of each individual
+        }
     }
-}
+
+
 void population::affiche()
 {
     for (int i=0;i<nbre;i++)
@@ -148,29 +172,34 @@ population::~population()
 }
 population& population::operator=(const population& other)
 {
-    if (this != &other) {
+   if (this != &other) {
         nbre = other.nbre;
-        pop = other.pop;
+        pop.clear();
+        pop.reserve(other.pop.size());
+        for (const auto& ch : other.pop) {
+            pop.emplace_back(ch);
+        }
     }
     return *this;
 }
 
 chemin mutation (chemin ch , const graphe& G)
 {
-    int l = rand() % (ch.dim-1);
-    int k = rand() % (ch.dim-1);
+    int l = rand() % (ch.dim-1)+2;
+    int k = rand() % (ch.dim-2)+1;
     if (l<k)
     {
         int c=k;
         k=l;
         l=c;
     }
-    while ((G.val(ch.indiv[k-1], ch.indiv[l])==-1) || (G.val(ch.indiv[l-1], ch.indiv[k+2])==-1)|| (G.val(ch.indiv[k+1], ch.indiv[l-2])==-1) || (G.val(ch.indiv[k], ch.indiv[l+1])==-1))
+    while ((G.val(ch.indiv[k-1], ch.indiv[l])==-1) || (G.val(ch.indiv[l-1], ch.indiv[k+2])==-1)|| (G.val(ch.indiv[l-2], ch.indiv[k+1])==-1) || (G.val(ch.indiv[k], ch.indiv[l+1])==-1))
     {
-        int l = rand() % (ch.dim);
-        int k = rand() % (ch.dim);
+         l = rand() % (ch.dim-1)+2;
+         k = rand() % (ch.dim-2)+1;
 
     }
+
     int c1=ch.indiv[l];
     int c2=ch.indiv[k];
     ch.indiv[l]=c2;
@@ -190,43 +219,40 @@ bool compare_by_adapt_desc(const chemin& A,const chemin& B, const graphe& G)
     return A.adapt(G)>B.adapt(G);
 }
 
-chemin selec_roulette(population pop, const graphe& G )
+chemin selec_roulette(const population& P, const graphe& G )
 {
     int s=0;
-    for (int i=0;i<pop.nbre;i++) s+=pop[i].adapt(G);
-    int r = rand() % (s);
-    int i=0; int sum=pop[0].adapt(G);
-    while( (i<pop.nbre)&& (sum<r) )
+    for (int i=0;i<P.nbre;i++) s+=P.pop[i].adapt(G);
+    int r = rand() % (s+1);
+    int i=0; int sum=P.pop[0].adapt(G);
+    while( (i<P.nbre)&& (sum<r) )
     {
-        cout<<"hello";
         i+=1;
-        sum+=pop[i].adapt(G);
+        sum+=P.pop[i].adapt(G);
     }
-    return pop[i];
+    return P.pop[i];
 }
 
- chemin selec_rang(const population& popu, const graphe& G)
+ chemin selec_rang(const population& P, const graphe& G)
 {
 
-      population pop_copie(popu);
-       sort(pop_copie.pop.begin(), pop_copie.pop.end(), [&](const chemin& A, const chemin& B) {
-        return compare_by_adapt_asc(A, B, G);
-    });
-      int s=0;
-      for (int i=0;i<pop_copie.nbre;i++) s+=i+1;
-      int r = rand() % (s);
+      population pop_copie(P);
+      pop_copie.sort_by_adapt_asc(G);
+      int somme_rang=P.nbre*(P.nbre+1)/2;
+      int r = rand() % (somme_rang+1);
       int i=0; int sum=1;
-      while( (i<pop_copie.nbre)&& (sum<=r) )
+      while( (i<pop_copie.nbre)&& (sum<r) )
         {
         i+=1;
         sum+=i+1;
       }
-    return pop_copie.pop.at(i);
+    return pop_copie.pop[i];
 }
+
 population selec_tournoi(const population &gen,const graphe& G)
 {
     int n=gen.nbre;
-    population pop_tournoi=population(n);
+    population pop_tournoi(n);
     for(int i=0; i<n; i++)
     {
         int j=rand()%n;
@@ -245,69 +271,94 @@ population selec_tournoi(const population &gen,const graphe& G)
             proba1=1-0.8;
         }
         double proba=rand() / (double)RAND_MAX;
-        if (proba<proba1) pop_tournoi[i]=p1;
-        else pop_tournoi[i]=p2;
+        if (proba<proba1) pop_tournoi.pop[i]=p1;
+        else pop_tournoi.pop[i]=p2;
 
     }
     return pop_tournoi;
 }
 
-population selec_reproducteurs(population pop_initi,const graphe& G,std::string selection_method)
+population selec_reproducteurs( const population& pop_initi,const graphe& G,const char*  selection_method)
 {
-    if (selection_method.compare("selec_tournoi") == 0) {return selec_tournoi(pop_initi,G);}
     population pop_prod (pop_initi.nbre);
-    for (int i = 0; i < pop_initi.nbre; i++) {
-        chemin indiv_selected;
-        if (selection_method.compare("selec_rang") == 0) {
-            indiv_selected = selec_rang(pop_initi, G);
+    if (strcmp("selec_tournoi",selection_method) == 0) { pop_prod=selec_tournoi(pop_initi,G);return pop_prod;}
+   if (strcmp("selec_rang", selection_method) == 0) {
+            for (int i = 0; i < pop_initi.nbre; i++) {
+                chemin indiv_selected = selec_rang(pop_initi, G);
+                pop_prod[i] = indiv_selected;
+            }
+        } else if (strcmp("selec_roulette", selection_method) == 0) {
+            for (int i = 0; i < pop_initi.nbre; i++) {
+                chemin ch = selec_roulette(pop_initi, G);
+                pop_prod[i] = ch;
+            }
         }
-        else if (selection_method.compare("roulette") == 0) {
-            indiv_selected = selec_roulette(pop_initi, G);
-        }
-        pop_prod[i] = indiv_selected;
+return pop_prod;
+
     }
-    return pop_prod;
-}
 
-
-population selection_nextgen(population pop_prod, int q, const graphe& G)
+ population selection_nextgen(population pop_prod, int q, const graphe& G)
 {
 
     int n=pop_prod.nbre;
     population next_gen=population(n);
-    for (int i=0;i<n;i+=2)
+    for (int i=0;i<(n/2);i++)
     {
         //crossover
-        int j= rand() % (n);
-        int l=rand() % (n);
+
+        int j= rand() % (pop_prod.nbre);
+        int l=rand() % (pop_prod.nbre);
+
 
         chemin p1(pop_prod.pop[j]);
         chemin p2(pop_prod.pop[l]);
-        pop_prod.pop.erase(pop_prod.pop.begin()+j);
-        pop_prod.pop.erase(pop_prod.pop.begin()+l);
-        chemin f1=chemin(p1.dim);
-        chemin f2=chemin(p1.dim);
 
-        int k=rand() % (p1.dim);
+
+        pop_prod.pop.erase(pop_prod.pop.begin()+j);
+
+        pop_prod.pop.erase(pop_prod.pop.begin()+l);
+
+        pop_prod.nbre-=2;
+
+
+        chemin f1(p1.dim);
+        chemin f2(p1.dim);
+
+        int k=rand() % (p1.dim)+1;
         while ((G.val(p1.indiv[k-1], p2.indiv[k])==-1) || (G.val(p2.indiv[k-1], p1.indiv[k])==-1))
-            int k=rand() % (p1.dim);
+        {
+            k=rand() % (p1.dim)+1;
+
+        }
+
 
         for (int m=0;m<k;m++)
         {
             f1.indiv[m]=p1.indiv[m];
             f2.indiv[m]=p2.indiv[m];
         }
-        for (int m=k;m<p1.dim;i++)
+        for (int m=k;m<p1.dim;m++)
         {
             f1.indiv[m]=p2.indiv[m];
             f2.indiv[m]=p1.indiv[m];
         }
+        /*
+        cout<<"enfant"<<"\n";
+        f1.affiche();
+        cout<<"enfant"<<"\n";
+        f2.affiche();
+        */
         //mutation
         f1=mutation(f1,G);
+        //f1.affiche();
         f2=mutation(f2,G);
+        //f2.affiche();
         //add to the next generation
-        next_gen.pop[i]=f1;
-        next_gen.pop[i+1]=f2;
+        next_gen.pop[2*i]=f1;
+        //cout<<"addok"<<"\n";
+        next_gen.pop[2*i+1]=f2;
+        //cout<<"addok"<<"\n";
+
     }
     sort(pop_prod.pop.begin(), pop_prod.pop.end(), [&](const chemin& A, const chemin& B) {
         return compare_by_adapt_asc(A, B, G);
@@ -320,6 +371,8 @@ population selection_nextgen(population pop_prod, int q, const graphe& G)
         next_gen.pop[i]=pop_prod.pop[i];
     return next_gen;
 }
+
+
 
 population gen_init(const graphe& G,int taille, int k)
 {
@@ -342,8 +395,4 @@ population gen_init(const graphe& G,int taille, int k)
     }
     return gen;
 }
-
-
-
-
 
