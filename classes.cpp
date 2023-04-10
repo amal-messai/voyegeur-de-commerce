@@ -76,24 +76,21 @@ void graphe::affiche()
 individu::individu(int n)
 {
     dim=n;
-    indiv= new int [dim];
-    for (int j = 0; j < dim; j++) {
-        indiv[j] = 0;
-}}
+    indiv .resize(n);
+}
 individu::individu(const individu& v)
 {
     dim=v.dim;
-    indiv= new int [dim];
-    for (int i=0; i<dim;i++)
-    {
-        indiv[i]=v.indiv[i];
-    }
+    indiv.reserve(v.indiv.size());
+    for (const auto& ch : v.indiv) {
+            indiv.emplace_back(ch); // use chemin's copy constructor to make a copy of each individual
+        }
 }
 
  //destructeur d'individu
 chemin::~chemin()
 {
-    if (indiv!=0) delete [] indiv;
+    indiv.clear();
     dim=0;
 }
 
@@ -130,12 +127,12 @@ void chemin::affiche()
 }
 chemin& chemin::operator =(const chemin&other)
 {
-    if (this != &other) {
+   if (this != &other) {
         dim = other.dim;
-        delete[] indiv;
-        indiv = new int[dim];
-    for (int i=0;i<dim;i++) indiv[i]=other.indiv[i];}
+        indiv = other.indiv;
+    }
     return *this;
+
 }
 
 // class population et ses fonctionalités
@@ -172,13 +169,9 @@ population::~population()
 }
 population& population::operator=(const population& other)
 {
-   if (this != &other) {
+    if (this != &other) {
         nbre = other.nbre;
-        pop.clear();
-        pop.reserve(other.pop.size());
-        for (const auto& ch : other.pop) {
-            pop.emplace_back(ch);
-        }
+        pop = other.pop;
     }
     return *this;
 }
@@ -285,19 +278,19 @@ population selec_reproducteurs( const population& pop_initi,const graphe& G,cons
    if (strcmp("selec_rang", selection_method) == 0) {
             for (int i = 0; i < pop_initi.nbre; i++) {
                 chemin indiv_selected = selec_rang(pop_initi, G);
-                pop_prod[i] = indiv_selected;
+                pop_prod.pop[i] = indiv_selected;
             }
         } else if (strcmp("selec_roulette", selection_method) == 0) {
             for (int i = 0; i < pop_initi.nbre; i++) {
                 chemin ch = selec_roulette(pop_initi, G);
-                pop_prod[i] = ch;
+                pop_prod.pop[i] = ch;
             }
         }
 return pop_prod;
 
-    }
+}
 
- population selection_nextgen(population pop_prod, int q, const graphe& G)
+  population selection_nextgen(population pop_prod,population pop_init, int q, const graphe& G)
 {
 
     int n=pop_prod.nbre;
@@ -360,7 +353,7 @@ return pop_prod;
         //cout<<"addok"<<"\n";
 
     }
-    sort(pop_prod.pop.begin(), pop_prod.pop.end(), [&](const chemin& A, const chemin& B) {
+    sort(pop_init.pop.begin(), pop_init.pop.end(), [&](const chemin& A, const chemin& B) {
         return compare_by_adapt_asc(A, B, G);
     });
     sort(next_gen.pop.begin(), next_gen.pop.end(), [&](const chemin& A, const chemin& B ) {
@@ -368,7 +361,7 @@ return pop_prod;
     });
 
     for (int i=0;i<q;i++)
-        next_gen.pop[i]=pop_prod.pop[i];
+        next_gen.pop[i]=pop_init.pop[i];
     return next_gen;
 }
 
@@ -396,3 +389,4 @@ population gen_init(const graphe& G,int taille, int k)
     return gen;
 }
 
+    
